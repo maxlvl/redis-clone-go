@@ -2,20 +2,22 @@ package main
 
 import (
 	"fmt"
-	 "net"
-   "bufio"
+	"net"
 )
 
 func main() {
-  listener, _ := net.Listen("tcp", ":6379")
+	listener, _ := net.Listen("tcp", ":6379")
 
-  conn, _ := listener.Accept()
+	conn, _ := listener.Accept()
 
-  for {
-    message, err := bufio.NewReader(conn).ReadString('\n')
-    if err != nil {
-      fmt.Println("Error occurred: %s", err)
-    }
-    fmt.Print("Message received:", string(message))
-  }
+	defer conn.Close()
+
+	for {
+		response := []byte("+PONG\r\n")
+    _, err := conn.Write(response)
+		if err != nil {
+			fmt.Println("Error occurred in sending reply: %s", err)
+      return
+		}
+	}
 }
