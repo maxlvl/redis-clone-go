@@ -14,15 +14,12 @@ func main() {
 	}
 }
 
-
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-  for {
-    response := []byte("+PONG\r\n")
-    _, err := conn.Write(response)
-    if err != nil {
-      fmt.Println("Error occurred in sending reply: %s", err)
-      return
-    }
-  }
+	response := []byte("+PONG\r\n")
+	_, err := conn.Write(response)
+	if err != nil {
+		fmt.Println("Error occurred in sending reply: %s", err)
+		return
+	}
 }
