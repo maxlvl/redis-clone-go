@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+  "bufio"
 )
 
 func main() {
@@ -16,10 +17,19 @@ func main() {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	response := []byte("+PONG\r\n")
-	_, err := conn.Write(response)
-	if err != nil {
-		fmt.Println("Error occurred in sending reply: %s", err)
-		return
+  scanner := bufio.NewScanner(conn)
+
+	for scanner.Scan() {
+		request := scanner.Text()
+
+		fmt.Println("Request received:", request)
+
+		response := "+PONG\r\n"
+		_, err := conn.Write([]byte(response))
+		fmt.Println("Sending response:", response)
+		if err != nil {
+			fmt.Println("Error occurred in sending reply:", err)
+			return
+		}
 	}
 }
