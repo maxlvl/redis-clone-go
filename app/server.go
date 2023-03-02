@@ -24,7 +24,7 @@ func handleConnection(conn net.Conn) {
 			if err == io.EOF {
 				break
 			} else {
-				fmt.Println("Error reading from client: %s", err.Error())
+				fmt.Println("Error reading  from client: %s", err.Error())
 				os.Exit(1)
 			}
 		}
