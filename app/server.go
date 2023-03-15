@@ -52,7 +52,6 @@ func parseCommand(reader *bufio.Reader) ([]string, error) {
 		return nil, fmt.Errorf("Invalid command format")
 	}
 
-  fmt.Printf("PASSING IN TO NUMARGS")
 	numArgs, err := strconv.Atoi(strings.TrimPrefix(strings.TrimSpace(line), "*"))
 	if err != nil {
     fmt.Printf("Error parsing number of commands: %s\n", err.Error())
