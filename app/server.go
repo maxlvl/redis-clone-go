@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -18,9 +21,10 @@ func main() {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
+	reader := bufio.NewReader(conn)
 	for {
-		buf := make([]byte, 1024)
-		if _, err := conn.Read(buf); err != nil {
+		command, err := parseCommand(reader)
+		if err != nil {
 			if err == io.EOF {
 				break
 			} else {
@@ -28,14 +32,77 @@ func handleConnection(conn net.Conn) {
 				os.Exit(1)
 			}
 		}
-		response := []byte("+PONG\r\n")
-		_, err := conn.Write(response)
+
+		response := handleCommand(command)
+		_, err = conn.Write([]byte(response))
 		if err != nil {
 			fmt.Println("Error writing response: %s", err.Error())
 			os.Exit(1)
 		}
+	}
+}
 
+func parseCommand(reader *bufio.Reader) ([]string, error) {
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		return nil, err
 	}
 
-	// Send "+PONG\r\n" response
+	if !strings.HasPrefix(line, "*") {
+		return nil, fmt.Errorf("Invalid command format")
+	}
+
+  fmt.Printf("PASSING IN TO NUMARGS")
+	numArgs, err := strconv.Atoi(strings.TrimPrefix(strings.TrimSpace(line), "*"))
+	if err != nil {
+    fmt.Printf("Error parsing number of commands: %s\n", err.Error())
+		return nil, err
+	}
+
+	args := make([]string, numArgs)
+	for i := 0; i < numArgs; i++ {
+		line, err = reader.ReadString('\n')
+		if err != nil {
+			return nil, err
+		}
+
+		if !strings.HasPrefix(line, "$") {
+			return nil, fmt.Errorf("invalid argument format")
+		}
+
+		length, err := strconv.Atoi(strings.TrimPrefix(strings.TrimSpace(line), "$"))
+		if err != nil {
+      fmt.Printf("Error parsing length of each command: %s\n", err.Error())
+			return nil, err
+		}
+
+		arg, err := reader.ReadString('\n')
+		if err != nil {
+			return nil, err
+		}
+
+		args[i] = strings.TrimSpace(arg)[:length]
+	}
+
+	return args, nil
+}
+
+func handleCommand(command []string) string {
+	if len(command) == 0 {
+		return "-ERR empty command \r\n"
+	}
+
+	switch strings.ToUpper(command[0]) {
+	case "PING":
+		return "+PONG\r\n"
+	case "ECHO":
+		if len(command) < 2 {
+			return "-ERR wrong number of arguments for 'ECHO' command\r\n"
+		}
+
+		return fmt.Sprintf("$%d\r\n%s\r\n", len(command[1]), command[1])
+
+	default:
+		return fmt.Sprintf("-ERR unknown command '%s'\r\n", command[0])
+	}
 }
