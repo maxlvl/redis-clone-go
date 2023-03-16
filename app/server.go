@@ -87,6 +87,7 @@ func parseCommand(reader *bufio.Reader) ([]string, error) {
 }
 
 func handleCommand(command []string) string {
+  kvStore := make(map[string]string)
 	if len(command) == 0 {
 		return "-ERR empty command \r\n"
 	}
@@ -100,6 +101,24 @@ func handleCommand(command []string) string {
 		}
 
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(command[1]), command[1])
+  case "SET":
+    if len(command) > 2 {
+      kvStore[command[1]] = command[2]
+      response := "+OK\r\n"
+      return response
+    }
+
+  case "GET":
+    if len(command) > 1 {
+      value, exists := kvStore[command[1]]
+      if exists {
+        response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
+        return response
+      } else {
+        response := "$-1\r\n"
+        return response
+      }
+    }
 
 	default:
 		return fmt.Sprintf("-ERR unknown command '%s'\r\n", command[0])
