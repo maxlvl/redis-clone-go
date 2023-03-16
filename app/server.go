@@ -22,6 +22,7 @@ func main() {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	reader := bufio.NewReader(conn)
+  kvStore := make(map[string]string)
 	for {
 		command, err := parseCommand(reader)
 		if err != nil {
@@ -33,7 +34,6 @@ func handleConnection(conn net.Conn) {
 			}
 		}
 
-    kvStore := make(map[string]string)
 		response := handleCommand(command, kvStore)
 		_, err = conn.Write([]byte(response))
 		if err != nil {
