@@ -102,7 +102,7 @@ func handleCommand(command []string, kvStore map[string]string) string {
 
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(command[1]), command[1])
 	case "SET":
-		if len(command) > 2 {
+		if len(command) == 3 {
 			kvStore[command[1]] = command[2]
 			response := "+OK\r\n"
 			return response
@@ -111,7 +111,8 @@ func handleCommand(command []string, kvStore map[string]string) string {
     }
 
 	case "GET":
-		if len(command) > 1 {
+    debugPrintKvStore(kvStore)
+		if len(command) == 2 {
 			value, exists := kvStore[command[1]]
 			if exists {
 				response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
@@ -128,4 +129,11 @@ func handleCommand(command []string, kvStore map[string]string) string {
 	default:
 		return fmt.Sprintf("-ERR unknown command '%s'\r\n", command[0])
 	}
+}
+
+func debugPrintKvStore(kvStore map[string]string) {
+    fmt.Println("Debug print of kvStore:")
+    for key, value := range kvStore {
+        fmt.Printf("Key: %s, Value: %s\n", key, value)
+    }
 }
