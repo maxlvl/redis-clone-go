@@ -104,6 +104,7 @@ func handleCommand(command []string, kvStore map[string]string) string {
 	case "SET":
 		if len(command) == 3 {
 			kvStore[command[1]] = command[2]
+      debugPrintKvStore(kvStore)
 			response := "+OK\r\n"
 			return response
 		} else {
@@ -111,7 +112,6 @@ func handleCommand(command []string, kvStore map[string]string) string {
     }
 
 	case "GET":
-    debugPrintKvStore(kvStore)
 		if len(command) == 2 {
 			value, exists := kvStore[command[1]]
 			if exists {
