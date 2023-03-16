@@ -33,7 +33,8 @@ func handleConnection(conn net.Conn) {
 			}
 		}
 
-		response := handleCommand(command)
+    kvStore := make(map[string]string)
+		response := handleCommand(command, kvStore)
 		_, err = conn.Write([]byte(response))
 		if err != nil {
 			fmt.Println("Error writing response: %s", err.Error())
@@ -86,8 +87,7 @@ func parseCommand(reader *bufio.Reader) ([]string, error) {
 	return args, nil
 }
 
-func handleCommand(command []string) string {
-	kvStore := make(map[string]string)
+func handleCommand(command []string, kvStore map[string]string) string {
 	if len(command) == 0 {
 		return "-ERR empty command \r\n"
 	}
@@ -106,7 +106,9 @@ func handleCommand(command []string) string {
 			kvStore[command[1]] = command[2]
 			response := "+OK\r\n"
 			return response
-		}
+		} else {
+      return "-ERR wrong number of arguments for SET command\r\n"
+    }
 
 	case "GET":
 		if len(command) > 1 {
@@ -118,7 +120,10 @@ func handleCommand(command []string) string {
 				response := "$-1\r\n"
 				return response
 			}
-		}
+		} else {
+      return "-ERR wrong number of arguments for GET command\r\n"
+    }
+    
 
 	default:
 		return fmt.Sprintf("-ERR unknown command '%s'\r\n", command[0])
