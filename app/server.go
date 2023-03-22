@@ -154,9 +154,9 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 				return "-ERR something went wrong BLOOP BLURP\r\n"
 			}
 
-			px, ok := inner_map["px"]
+			px, ok := inner_map["px"].(int64)
 
-			if px {
+			if ok {
 				current_time := time.Now()
 				time_elapsed := current_time.Add(-time.duration(px) * time.Milisecond)
 				if time_elapsed.Before(time_set) {
