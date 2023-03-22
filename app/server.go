@@ -118,7 +118,6 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 				"value":    value,
 				"time_set": time.Now(),
 			}
-			debugPrintKvStore(kvStore)
 			response := "+OK\r\n"
 			return response
 		} else if len(command) == 5 {
@@ -130,7 +129,6 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 				"time_set": time.Now(),
 				"px":       px,
 			}
-			debugPrintKvStore(kvStore)
 			response := "+OK\r\n"
 			return response
 		} else {
@@ -179,9 +177,3 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 	}
 }
 
-func debugPrintKvStore(kvStore map[string]string) {
-	fmt.Println("Debug print of kvStore:")
-	for key, value := range kvStore {
-		fmt.Printf("Key: %s, Value: %s\n", key, value)
-	}
-}
