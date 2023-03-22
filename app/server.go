@@ -162,9 +162,14 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 				return "-ERR something went wrong BLOOP BLURP\r\n"
 			}
 
-			px, ok := inner_map["px"].(int64)
+			pxStr, ok := inner_map["px"].(string)
 
 			if ok {
+        px, err := strconv.ParseInt(pxStr, 10, 64)
+        if err != nil {
+          fmt.Println("Something went wrong trying to convert px to an int")
+          return "-ERR something went wrong BLOOP BLURP\r\n"
+        }
 				current_time := time.Now()
 				time_elapsed := current_time.Add(-time.Duration(px) * time.Millisecond)
 				if time_elapsed.Before(time_set) {
