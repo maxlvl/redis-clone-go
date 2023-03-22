@@ -161,7 +161,7 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 			}
 
 			px, ok := inner_map["px"].(int64)
-			if !ok {
+      if !ok {
           fmt.Println("PX key was not set - returning regular value as response")
 					response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
 					return response
@@ -177,7 +177,7 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 					response := "$-1\r\n"
 					return response
 				}
-      }
+			} 
 		} else {
 			return "-ERR wrong number of arguments for GET command\r\n"
 		}
