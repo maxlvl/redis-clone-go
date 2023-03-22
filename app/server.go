@@ -158,7 +158,7 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 
 			if ok {
 				current_time := time.Now()
-				time_elapsed := current_time.Add(-time.duration(px) * time.Milisecond)
+				time_elapsed := current_time.Add(-time.Duration(px) * time.Millisecond)
 				if time_elapsed.Before(time_set) {
 					response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
 					return response
@@ -166,8 +166,10 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 					response := "$-1\r\n"
 					return response
 				}
-			}
-
+			} else {
+					response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
+					return response
+      }
 		} else {
 			return "-ERR wrong number of arguments for GET command\r\n"
 		}
