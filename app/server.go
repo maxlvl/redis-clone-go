@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	reader := bufio.NewReader(conn)
-  kvStore := make(map[string]string)
+	kvStore := make(map[string]map[string]interface{})
 	for {
 		command, err := parseCommand(reader)
 		if err != nil {
@@ -102,29 +103,76 @@ func handleCommand(command []string, kvStore map[string]string) string {
 
 		return fmt.Sprintf("$%d\r\n%s\r\n", len(command[1]), command[1])
 	case "SET":
+		// if a PX is sent along with the SET command, set it in a nested hash map of kvStore.
+		// {
+		//  "value": "stuff",
+		//  "time_set": "current_timestamp",
+		//  "px": "expiry time stored in miliseconds"
+		// }
+		// when doing a GET, check for the presence of the PX value in nested hash_map
+		// then, compare current_time - px <= time_set, if so, key is good. If not, key has expired and return NULL value
 		if len(command) == 3 {
-			kvStore[command[1]] = command[2]
-      debugPrintKvStore(kvStore)
+			key_name := command[1]
+			value := command[2]
+			kvStore[key_name] = map[string]interface{}{
+				"value":    value,
+				"time_set": time.Now(),
+			}
+			debugPrintKvStore(kvStore)
+			response := "+OK\r\n"
+			return response
+		} else if len(command) == 5 {
+			key_name := command[1]
+			value := command[2]
+			px := command[4]
+			kvStore[key_name] = map[string]interface{}{
+				"value":    value,
+				"time_set": time.Now(),
+				"px":       px,
+			}
+			debugPrintKvStore(kvStore)
 			response := "+OK\r\n"
 			return response
 		} else {
-      return "-ERR wrong number of arguments for SET command\r\n"
-    }
+			return "-ERR wrong number of arguments for SET command\r\n"
+		}
 
 	case "GET":
 		if len(command) == 2 {
-			value, exists := kvStore[command[1]]
-			if exists {
-				response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
-				return response
-			} else {
-				response := "$-1\r\n"
-				return response
+			inner_map, ok := kvStore[command[1]]
+			if !ok {
+				fmt.Println("Something went wrong trying to fetch the innermap")
+				return
 			}
+			value, ok := inner_map["value"]
+			if !ok {
+				fmt.Println("Something went wrong trying to fetch the value from the inner_map")
+				return
+			}
+
+			time_set, ok := inner_map["time_set"].(time.Time)
+			if !ok {
+				fmt.Println("Something went wrong trying to fetch the time_set from the inner_map")
+				return
+			}
+
+			px, ok := inner_map["px"]
+
+			if px {
+				current_time := time.Now()
+				time_elapsed := current_time.Add(-time.duration(px) * time.Milisecond)
+				if time_elapsed.Before(time_set) {
+					response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
+					return response
+				} else {
+					response := "$-1\r\n"
+					return response
+				}
+			}
+
 		} else {
-      return "-ERR wrong number of arguments for GET command\r\n"
-    }
-    
+			return "-ERR wrong number of arguments for GET command\r\n"
+		}
 
 	default:
 		return fmt.Sprintf("-ERR unknown command '%s'\r\n", command[0])
@@ -132,8 +180,8 @@ func handleCommand(command []string, kvStore map[string]string) string {
 }
 
 func debugPrintKvStore(kvStore map[string]string) {
-    fmt.Println("Debug print of kvStore:")
-    for key, value := range kvStore {
-        fmt.Printf("Key: %s, Value: %s\n", key, value)
-    }
+	fmt.Println("Debug print of kvStore:")
+	for key, value := range kvStore {
+		fmt.Printf("Key: %s, Value: %s\n", key, value)
+	}
 }
