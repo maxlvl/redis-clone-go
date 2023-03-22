@@ -166,10 +166,10 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 				current_time := time.Now()
 				time_elapsed := current_time.Add(-time.Duration(px) * time.Millisecond)
 				if time_elapsed.Before(time_set) {
-					response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
+					response := "$-1\r\n"
 					return response
 				} else {
-					response := "$-1\r\n"
+					response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
 					return response
 				}
 			} else {
