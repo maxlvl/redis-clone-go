@@ -142,11 +142,17 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 				fmt.Println("Something went wrong trying to fetch the innermap")
 				return "-ERR something went wrong BLOOP BLURP\r\n"
 			}
-			value, ok := inner_map["value"]
+      valueInterface, ok := inner_map["value"]
 			if !ok {
 				fmt.Println("Something went wrong trying to fetch the value from the inner_map")
 				return "-ERR something went wrong BLOOP BLURP\r\n"
 			}
+
+			value, ok := valueInterface.(string)
+      if !ok {
+        fmt.Println("Something went wrong trying to convert the value to a string")
+        return "-ERR something went wrong BLOOP BLURP\r\n"
+      }
 
 			time_set, ok := inner_map["time_set"].(time.Time)
 			if !ok {
