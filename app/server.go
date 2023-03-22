@@ -88,7 +88,7 @@ func parseCommand(reader *bufio.Reader) ([]string, error) {
 	return args, nil
 }
 
-func handleCommand(command []string, kvStore map[string]string) string {
+func handleCommand(command []string, kvStore map[string]map[string]interface{}) string {
 	if len(command) == 0 {
 		return "-ERR empty command \r\n"
 	}
@@ -142,18 +142,18 @@ func handleCommand(command []string, kvStore map[string]string) string {
 			inner_map, ok := kvStore[command[1]]
 			if !ok {
 				fmt.Println("Something went wrong trying to fetch the innermap")
-				return
+				return "-ERR something went wrong BLOOP BLURP\r\n"
 			}
 			value, ok := inner_map["value"]
 			if !ok {
 				fmt.Println("Something went wrong trying to fetch the value from the inner_map")
-				return
+				return "-ERR something went wrong BLOOP BLURP\r\n"
 			}
 
 			time_set, ok := inner_map["time_set"].(time.Time)
 			if !ok {
 				fmt.Println("Something went wrong trying to fetch the time_set from the inner_map")
-				return
+				return "-ERR something went wrong BLOOP BLURP\r\n"
 			}
 
 			px, ok := inner_map["px"]
