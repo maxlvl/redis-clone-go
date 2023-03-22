@@ -118,6 +118,7 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 				"value":    value,
 				"time_set": time.Now(),
 			}
+      fmt.Printf("SET command of 3 :kvStore: %+v\n", kvStore)
 			response := "+OK\r\n"
 			return response
 		} else if len(command) == 5 {
@@ -129,6 +130,7 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 				"time_set": time.Now(),
 				"px":       px,
 			}
+      fmt.Printf("SET command of 5 :kvStore: %+v\n", kvStore)
 			response := "+OK\r\n"
 			return response
 		} else {
@@ -161,11 +163,6 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 			}
 
 			px, ok := inner_map["px"].(int64)
-      if !ok {
-          fmt.Println("PX key was not set - returning regular value as response")
-					response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
-					return response
-      }
 
 			if ok {
 				current_time := time.Now()
@@ -177,7 +174,11 @@ func handleCommand(command []string, kvStore map[string]map[string]interface{}) 
 					response := "$-1\r\n"
 					return response
 				}
-			} 
+			} else {
+          fmt.Println("PX key was not set - returning regular value as response")
+					response := fmt.Sprintf("$%d\r\n%s\r\n", len(value), value)
+					return response
+      }
 		} else {
 			return "-ERR wrong number of arguments for GET command\r\n"
 		}
